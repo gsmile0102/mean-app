@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Video } from '../video';
+import { VideoService } from '../video.service';
 
 @Component({
   selector: 'app-video-center',
@@ -8,17 +9,49 @@ import { Video } from '../video';
 })
 export class VideoCenterComponent implements OnInit {
 
-  videos: Video[] = [
-    {"_id": "1", "title": "Title 1", "url": "url 1", "description": "desc 1"},
-    {"_id": "2", "title": "Title 2", "url": "url 2", "description": "desc 2"},
-    {"_id": "3", "title": "Title 3", "url": "url 3", "description": "desc 3"},
-    {"_id": "4", "title": "Title 4", "url": "url 4", "description": "desc 4"},
-    {"_id": "5", "title": "Title 5", "url": "url 5", "description": "desc 5"}
-  ];
+  videos: Video[];
 
-  constructor() { }
+  selectedVideo: Video;
+
+  private hideNewVideo: boolean = true;
+
+  constructor(private videoService: VideoService) { }
 
   ngOnInit() {
+    this.videoService.getVideos()
+      .subscribe((resVideoData) => {this.videos = resVideoData});
+  }
+
+  onSelectVideo(video: any) {
+    this.selectedVideo = video;
+    this.hideNewVideo = true;
+    console.log(this.selectedVideo);
+  }
+
+  onSubmitAddVideo(video: Video) {
+    this.videoService.addVideo(video)
+      .subscribe(resNewVideo => {
+        this.videos.push(resNewVideo);
+        this.hideNewVideo = true;
+        this.selectedVideo = resNewVideo;
+      });
+  }
+
+  newVideo() {
+    this.hideNewVideo = false;
+  }
+
+  onUpdateVideoEvent(video: any) {
+    this.videoService.updateVideo(video)
+      .subscribe(resUpdatedVideo => video = resUpdatedVideo);
+    this.selectedVideo = null;
+  }
+
+  onDeleteVideoEvent(video: any) {
+    this.videos = this.videos.filter(v => v !== video);
+    this.videoService.deleteVideo(video)
+      .subscribe();
+    this.selectedVideo = null;
   }
 
 }
